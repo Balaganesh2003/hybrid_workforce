@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full-Time Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f7f9; color: #333; }
+
+    /* Navbar */
+    .navbar { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; padding: 12px 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .navbar-left { display: flex; align-items: center; gap: 20px; }
+    .logo { color: white; font-size: 1.5rem; font-weight: bold; text-decoration: none; transition: 0.3s; }
+    .logo:hover { color: #3498db; }
+    .nav-links { list-style: none; display: flex; gap: 15px; margin: 0; padding: 0; }
+    .nav-links li a { color: white; text-decoration: none; font-weight: 500; transition: 0.3s; }
+    .nav-links li a.active, .nav-links li a:hover { color: #3498db; }
+
+    /* Navbar right */
+    .navbar-right { display: flex; align-items: center; gap: 15px; position: relative; }
+    .icon-btn { background: none; border: none; cursor: pointer; position: relative; padding: 6px; border-radius: 50%; }
+    .icon-btn img { width: 28px; height: 28px; border-radius: 50%; }
+    .badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 50%; }
+
+    /* Dropdown */
+    .dropdown { position: relative; }
+    .dropdown-content { display: none; position: absolute; top: 100%; right: 0; background: white; min-width: 220px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); margin-top: 6px; z-index: 100; overflow: hidden; }
+    .dropdown-content a, .dropdown-content div { padding: 12px 16px; font-size: 0.9rem; display: block; color: #555; text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+    .dropdown-content a:hover { background: #f8f8f8; }
+    .show { display: block !important; }
+
+    /* Dashboard */
+    .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; }
+
+    .welcome-banner { background: #2c3e50; color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+    .welcome-banner h1 { margin: 0; font-size: 1.8rem; }
+    .welcome-banner span { font-size: 0.95rem; color: #d1d5db; }
+
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 30px; }
+    .stat-box { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 6px 15px rgba(0,0,0,0.05); transition: 0.2s; }
+    .stat-box:hover { transform: translateY(-3px); }
+    .stat-box h3 { margin: 0; font-size: 1.1rem; color: #555; }
+    .stat-box p { font-size: 1.6rem; font-weight: 600; margin-top: 10px; color: #2c3e50; }
+    .stat-icon { font-size: 1.5rem; margin-bottom: 8px; color: #3498db; }
+
+    /* Cards */
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .card h2 { margin-top: 0; margin-bottom: 15px; font-size: 1.2rem; }
+
+    .project-item, .activity-item { padding: 12px 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .project-item:last-child, .activity-item:last-child { border-bottom: none; }
+
+    .info-grid { display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-top:18px; }
+    .info-box { border:1px dashed #eef2f7; border-radius:12px; padding:14px; }
+    .info-label { font-size:13px; color:#6b7280; }
+    .info-value { margin-top:6px; font-weight:500; }
+
+    @media(max-width:768px){
+      .stats-grid { grid-template-columns: 1fr; }
+      .welcome-banner { flex-direction: column; gap: 10px; text-align: center; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_full_time' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_full_time' %}" class="active">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}">Projects</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    <!-- Notifications -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All ({{ notifications|length }})</a>
+        {% else %}
+          <div>No notifications</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Dashboard -->
+<div class="dashboard-container">
+
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <div>
+      <h1>Welcome, {{ user.username }} 👋</h1>
+      <span>Role: Full-Time</span>
+    </div>
+    <div><span>{{ current_date }}</span></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+      <h3>Ongoing Projects</h3>
+      <p>{{ ongoing_projects|default:0 }}</p>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+      <h3>Completed</h3>
+      <p>{{ completed_projects|default:0 }}</p>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+      <h3>Leaves Taken</h3>
+      <p>{{ leaves_taken|default:0 }}</p>
+    </div>
+    <div class="stat-box">
+      <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+      <h3>Monthly Salary</h3>
+      {% if monthly_salary %}
+        <p>₹{{ monthly_salary }}</p>
+      {% else %}
+        <p>—</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Employee Info -->
+  <div class="card">
+    <h2>Employee Information</h2>
+    <p style="color:#64748b;">Your basic account details and work preferences</p>
+    <div class="info-grid">
+      <div class="info-box"><div class="info-label">User Name</div><div class="info-value">{{ user.username }}</div></div>
+      <div class="info-box"><div class="info-label">Email</div><div class="info-value">{{ user.email }}</div></div>
+      <div class="info-box"><div class="info-label">Position</div><div class="info-value">{{ user.profile.position|default:"Full-Time Employee" }}</div></div>
+      <div class="info-box"><div class="info-label">Joining Date</div><div class="info-value">{{ user.date_joined|date:"F Y" }}</div></div>
+    </div>
+    <div style="margin-top:16px;">
+      <a href="{% url 'manage_profile' %}" style="background:#111827; color:#fff; border:1px solid #111827; padding:10px 14px; border-radius:10px; text-decoration:none;">Edit Account Details</a>
+    </div>
+  </div>
+
+<!-- Assigned Projects Section -->
+<div style="margin-bottom: 40px;">
+  <h2>Assigned Projects</h2>
+  {% if assigned_projects %}
+    {% for project in assigned_projects %}
+      <div style="margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        
+        <!-- Title + Status on same line -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0;">{{ project.title }}</h3>
+          <span style="font-size:14px; font-weight:600; color:#6b7280;">
+            Status: {{ project.status|capfirst }}
+          </span>
+        </div>
+        
+        <!-- Project Details -->
+        <p>Due: {{ project.end_date|date:"M d, Y" }}</p>
+        <p>Budget: ₹{{ project.estimated_budget|default:"—" }}</p>
+        <p>Team: {{ project.team_members.count }} members</p>
+
+        <!-- Progress Bar -->
+        <div style="margin-top: 10px;">
+          <div style="height: 10px; background: #ccc; border-radius: 5px;">
+            <div style="width: {{ project.progress_percent|default:0 }}%; height: 10px; background: black; border-radius: 5px;"></div>
+          </div>
+          <p style="margin-top: 4px;">Progress: {{ project.progress_percent|default:0 }}%</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="{% url 'project_detail' project.id %}" 
+             style="background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem;">
+            View Details
+          </a>
+
+          {% if user in project.team_members.all %}
+            <a href="{% url 'update_progress' project.id %}" 
+               style="background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem;">
+              Update Progress
+            </a>
+          {% endif %}
+
+          <a href="{% url 'message_team' project.id %}" 
+             style="background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem;">
+            Message Team
+          </a>
+        </div>
+
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No assigned projects yet.</p>
+  {% endif %}
+</div>
+
+
+  <!-- Recent Activity -->
+  <div class="card">
+    <h2>Recent Activity</h2>
+    {% if recent_activity %}
+      {% for activity in recent_activity %}
+        <div class="activity-item">
+          <span>{{ activity.description }}</span>
+          <span>{{ activity.date }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No recent activity.</p>
+    {% endif %}
+  </div>
+
+  <!-- Notifications -->
+  <div class="card">
+    <h2>Notifications</h2>
+    {% if notifications %}
+      {% for note in notifications %}
+        <div class="activity-item">
+          <span>{{ note.message }}</span>
+          <small>{{ note.created_at|timesince }} ago</small>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No notifications available.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if(d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+window.onclick = function(event) {
+  if (!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+</body>
+</html>
+   

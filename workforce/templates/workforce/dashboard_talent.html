@@ -1,0 +1,89 @@
+{% load static %}
+
+{% block title %}Talent Dashboard{% endblock %}
+
+{% block content %}
+<div style="padding: 40px; font-family: 'Arial', sans-serif;">
+
+    <!-- Section 1: Welcome Banner -->
+    <div style="margin-bottom: 40px; background: #f0f0f0; padding: 20px; border-radius: 8px;">
+        <h2>Welcome, {{ user.username }}!</h2>
+        {% if profile %}
+            <p>Role: {{ user.user_type }} | Skills: {{ profile.skills|default:"Not set" }}</p>
+        {% else %}
+            <p>Role: {{ user.user_type }}</p>
+        {% endif %}
+        <p>Today is {{ today }}</p>
+    </div>
+
+    <!-- Section 2: Assigned Projects -->
+    <div style="margin-bottom: 40px;">
+        <h2>Assigned Projects</h2>
+        {% if assigned_projects %}
+            {% for project in assigned_projects %}
+                <div style="margin-top: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <h3>{{ project.title }}</h3>
+                            <p>Due: {{ project.end_date|date:"M d, Y" }}</p>
+                            <p>Budget: ${{ project.actual_budget|default:"—" }} / ${{ project.estimated_budget|default:"—" }}</p>
+                            <p>Team: {{ project.team_members.count }} members</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="padding: 4px 12px; background: #e0ffe0; color: green; border-radius: 12px;">
+                                {{ project.status|title }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <div style="height: 10px; background: #ccc; border-radius: 5px;">
+                            <div style="width: {{ project.progress_percent|default:0 }}%; height: 10px; background: black; border-radius: 5px;"></div>
+                        </div>
+                        <p style="margin-top: 4px;">Progress: {{ project.progress_percent|default:0 }}%</p>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <a href="{% url 'select_team' project.id %}" style="margin-right: 10px;">View Details</a>
+                        <a href="#" style="text-decoration: underline;">Message Team</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No assigned projects yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Section 3: Notifications -->
+    <div style="margin-bottom: 40px;">
+        <h2>Recent Notifications</h2>
+        {% if notifications %}
+            <ul style="list-style: none; padding: 0;">
+                {% for note in notifications|slice:":5" %}
+                    <li style="margin-bottom: 10px;">
+                        {% if note.level == "alert" %}
+                            <span style="color: red;">●</span>
+                        {% else %}
+                            <span style="color: orange;">●</span>
+                        {% endif %}
+                        {{ note.message }} <small style="color: #888;">({{ note.created_at|timesince }} ago)</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No recent notifications.</p>
+        {% endif %}
+    </div>
+
+    <!-- Section 4: Quick Actions -->
+    <div>
+        <h2>Quick Actions</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+            <a href="{% url 'manage_profile' %}" style="padding: 10px 20px; border: 1px solid black; text-decoration: none;">Manage Profile</a>
+            <a href="#" style="padding: 10px 20px; border: 1px solid black; text-decoration: none;">Submit Timesheet</a>
+            <a href="{% url 'notifications' %}" style="padding: 10px 20px; border: 1px solid black; text-decoration: none;">View All Notifications</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

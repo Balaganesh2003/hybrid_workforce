@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Create Project | HybridWork</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', sans-serif; background: #f4f7f6; margin: 0; padding: 0; color: #111827; }
+  .navbar { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; padding: 14px 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.15);}
+  .navbar-left { display: flex; align-items: center; gap: 20px; }
+  .logo { color: #fff; font-size: 1.5rem; font-weight: bold; text-decoration: none; }
+  .nav-links { display: flex; list-style: none; gap: 15px; margin: 0; padding: 0; }
+  .nav-links a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.2s; }
+  .nav-links a.active, .nav-links a:hover { color: #3498db; }
+  .navbar-right { display: flex; align-items: center; gap: 15px; }
+  .icon-btn img { width: 28px; height: 28px; object-fit: contain; display: block; }
+  .badge { position: absolute; top: -5px; right: -5px; background: red; color: #fff; font-size: 11px; padding: 2px 6px; border-radius: 9999px; }
+  .logout-btn { padding: 6px 12px; font-size: 13px; border-radius: 6px; background: #f9fafb; border: 1px solid #d1d5db; cursor: pointer; }
+  .logout-btn:hover { background: #f3f4f6; }
+  .form-container { max-width: 960px; margin: 40px auto; padding: 30px 40px; background: #fff; border-radius: 12px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+  h2 { text-align: center; font-size: 22px; font-weight: 600; margin-bottom: 25px; }
+  h3 { font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+  h4 { font-size: 14px; font-weight: 600; margin: 15px 0 10px; color: #374151; }
+  label { display: block; font-size: 14px; font-weight: 500; margin-top: 15px; color: #374151; }
+  input, textarea, select { width: 95%; padding: 12px; margin-top: 6px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+  textarea { min-height: 100px; resize: vertical; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .section-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-top: 30px; }
+  .btn { padding: 12px; font-weight: 500; border-radius: 8px; cursor: pointer; border: none; transition: background 0.2s; }
+  .btn-primary { background: #111827; color: #fff; }
+  .btn-primary:hover { background: #1f2937; }
+  .btn-secondary { background: #f9fafb; border: 1px solid #d1d5db; }
+  .btn-secondary:hover { background: #f3f4f6; }
+  .btn-full { width: 50%; border-radius: 9999px; display: block; margin: 0 auto; }
+  .candidate-card, .team-member { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .candidate-card { background: #fff; }
+  .team-member { background: #ecfdf5; }
+  .candidate-info { font-size: 13px; color: #6b7280; margin-top: 4px; }
+  .skill { background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; margin: 2px; display: inline-block; }
+  .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; }
+  .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+  .search-box input { flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; }
+</style>
+
+<script>
+function predictBudget() {
+  const hours = parseFloat(document.getElementById('id_estimated_hours')?.value) || 0;
+  const type = document.getElementById('id_project_type')?.value;
+  const baseCosts = { web:20000, mobile:40000, data:50000, cyber:60000, ui:15000 };
+  const baseCost = baseCosts[type] || 0;
+
+  let teamRate = 0;
+  document.querySelectorAll("#team-list .team-member").forEach(member => {
+    const text = member.querySelector("span").innerText;
+    const match = text.match(/₹([\d,.]+)\/hr/);
+    if (match) {
+      teamRate += parseFloat(match[1].replace(/,/g, ''));
+    } else {
+      const salaryMatch = text.match(/₹([\d,.]+)\/month/);
+      if (salaryMatch) {
+        const monthlySalary = parseFloat(salaryMatch[1].replace(/,/g, ''));
+        teamRate += monthlySalary / 160;
+      }
+    }
+  });
+
+  const budget = (hours * teamRate) + baseCost;
+  document.getElementById('budget-range').innerText = `₹${budget.toLocaleString()}`;
+  document.getElementById('budget-basedon').innerText =
+    `Calculated from ${hours} hrs × ₹${teamRate.toFixed(2)}/hr (team) + base cost (${type})`;
+}
+
+function usePredictedBudget() {
+  const budget = parseFloat(document.getElementById('budget-range').innerText.replace(/[₹,]/g,'')) || 0;
+  document.getElementById('id_estimated_budget').value = budget;
+}
+
+function addToTeam(userId, username, rate="", type="") {
+  const teamList = document.getElementById("team-list");
+  if ([...teamList.querySelectorAll("input[name='team_members']")].some(i=>i.value==userId)) {
+    alert(username + " already added.");
+    return;
+  }
+  const div = document.createElement("div");
+  div.className = "team-member";
+  let rateText = "";
+  if (rate) {
+    if (type === "full_time") {
+      rateText = ` • ₹${rate}/month`;
+    } else {
+      rateText = ` • ₹${rate}/hr`;
+    }
+  }
+  div.innerHTML = `<span>${username}${rateText}</span>
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+    <input type="hidden" name="team_members" value="${userId}">`;
+  teamList.appendChild(div);
+}
+
+function filterCandidates() {
+  const q = document.getElementById("search_input").value.toLowerCase();
+  document.querySelectorAll(".candidate-card").forEach(c => 
+    c.style.display = c.innerText.toLowerCase().includes(q) ? "flex" : "none"
+  );
+}
+</script>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}" class="{% if request.resolver_match.url_name == 'dashboard_client' %}active{% endif %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}" class="{% if request.resolver_match.url_name == 'projects' %}active{% endif %}">Projects</a></li>
+      <li><a href="{% url 'talent_search' %}" class="{% if request.resolver_match.url_name == 'talent_search' %}active{% endif %}">Talent</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    <a href="{% url 'notifications' %}" class="icon-btn" style="position:relative;">
+      <img src="{% static 'images/bell.png' %}" alt="Notifications" />
+      {% if request.user.notifications.unread.count > 0 %}
+        <span class="badge">{{ request.user.notifications.unread.count }}</span>
+      {% endif %}
+    </a>
+    <a href="{% url 'profile' %}" class="icon-btn"><img src="{% static 'images/customer.png' %}" alt="Profile" /></a>
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="logout-btn">Logout</button></form>
+  </div>
+</nav>
+
+<main class="form-container">
+<h2>Create Project</h2>
+<form method="post">{% csrf_token %}
+
+<section class="section-box">
+  <div class="grid-2">
+    <div><label for="id_title">Project Title *</label>{{ form.title }}</div>
+    <div><label for="id_project_type">Project Type *</label>{{ form.project_type }}</div>
+  </div>
+  <label for="id_description">Description *</label>{{ form.description }}
+  <div class="grid-3">
+    <div><label for="id_estimated_budget">Estimated Budget</label>{{ form.estimated_budget }}</div>
+    <div><label for="id_estimated_hours">Estimated Hours</label>{{ form.estimated_hours }}</div>
+    <div><label for="id_status">Status</label>{{ form.status }}</div>
+  </div>
+  <div class="grid-2">
+    <div><label for="id_start_date">Start Date</label>{{ form.start_date }}</div>
+    <div><label for="id_end_date">End Date</label>{{ form.end_date }}</div>
+  </div>
+  <label for="id_required_skills">Required Skills</label>{{ form.required_skills }}
+</section>
+
+<section class="section-box">
+<h3>Team Selection</h3>
+<div class="search-box">
+  <input type="text" id="search_input" placeholder="Search skills..." />
+  <button type="button" class="btn btn-secondary" onclick="filterCandidates()">Search</button>
+</div>
+
+<h4>Freelancers</h4>
+{% for user in freelancers %}
+<div class="candidate-card">
+  <div>
+    <div style="font-weight:600;">{{ user.username }}</div>
+    <div class="candidate-info">{{ user.email }}</div>
+    <div>
+      {% if user.manage_profile and user.manage_profile.skills.exists %}
+        {% for skill in user.manage_profile.skills.all %}<span class="skill">{{ skill.name }}</span>{% endfor %}
+      {% elif user.profile and user.profile.skills_display %}
+        {% for skill in user.profile.skills_display %}<span class="skill">{{ skill }}</span>{% endfor %}
+      {% else %}<span class="skill">No skills</span>{% endif %}
+    </div>
+    <div class="candidate-info">
+      {% if user.manage_profile and user.manage_profile.rate %}₹{{ user.manage_profile.rate }}/hr
+      {% elif user.profile and user.profile.hourly_rate %}₹{{ user.profile.hourly_rate }}/hr{% endif %}
+    </div>
+  </div>
+  <button type="button" class="btn btn-secondary"
+    onclick="addToTeam('{{ user.id }}','{{ user.username }}','{{ user.manage_profile.rate|default:user.profile.hourly_rate }}','freelancer')">Add</button>
+</div>
+{% empty %}<p>No freelancers available.</p>{% endfor %}
+
+<h4>Full-Time Candidates</h4>
+{% for user in fulltimers %}
+<div class="candidate-card">
+  <div>
+    <div style="font-weight:600;">{{ user.username }}</div>
+    <div class="candidate-info">{{ user.email }}</div>
+    <div>
+      {% if user.manage_profile and user.manage_profile.skills.exists %}
+        {% for skill in user.manage_profile.skills.all %}<span class="skill">{{ skill.name }}</span>{% endfor %}
+      {% elif user.profile and user.profile.skills_display %}
+        {% for skill in user.profile.skills_display %}<span class="skill">{{ skill }}</span>{% endfor %}
+      {% else %}<span class="skill">No skills</span>{% endif %}
+    </div>
+    <div class="candidate-info">
+      {% if user.manage_profile and user.manage_profile.salary %}₹{{ user.manage_profile.salary }}/month
+      {% elif user.profile and user.profile.monthly_salary %}₹{{ user.profile.monthly_salary }}/month
+      {% else %}Full-Time Employee{% endif %}
+    </div>
+  </div>
+  <button type="button" class="btn btn-secondary"
+    onclick="addToTeam('{{ user.id }}','{{ user.username }}','{{ user.manage_profile.salary|default:user.profile.monthly_salary }}','full_time')">Add</button>
+</div>
+{% empty %}<p>No full-time candidates available.</p>{% endfor %}
+
+<h4>Proposed Team</h4>
+<div id="team-list"></div>
+</section>
+
+<section class="section-box">
+<h3>Budget Prediction</h3>
+<button type="button" class="btn btn-primary btn-full" onclick="predictBudget()">Predict Budget</button>
+<div style="text-align:center; margin:20px 0;">
+  <div id="budget-range" style="font-size:20px; font-weight:600;">₹0</div>
+  <div id="budget-basedon" style="font-size:12px; color:#9ca3af;"></div>
+</div>
+<button type="button" class="btn btn-secondary btn-full" onclick="usePredictedBudget()">Use Predicted Budget</button>
+</section>
+
+<div style="margin-top:25px;">
+  <button type="submit" class="btn btn-primary btn-full">Create Project</button>
+</div>
+</form>
+</main>
+</body>
+</html>

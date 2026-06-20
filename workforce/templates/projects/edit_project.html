@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Project - {{ project.title }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { margin:0; font-family: 'Segoe UI', Tahoma, sans-serif; background:#f4f6f9; color:#333; }
+
+    /* Navbar */
+    .navbar {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#2c3e50; padding:12px 30px; position:sticky; top:0; z-index:1000;
+      box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    .navbar-left { display:flex; align-items:center; gap:20px; }
+    .logo { color:white; font-size:1.5rem; font-weight:bold; text-decoration:none; transition:.3s; }
+    .logo:hover { color:#3498db; }
+    .nav-links { list-style:none; display:flex; gap:15px; margin:0; padding:0; }
+    .nav-links li a { color:white; text-decoration:none; font-weight:500; transition:.3s; }
+    .nav-links li a.active, .nav-links li a:hover { color:#3498db; }
+    .navbar-right { display:flex; align-items:center; gap:15px; }
+    .search-box {
+      padding:6px 12px; border-radius:20px; border:none;
+      background:#34495e; color:white; outline:none;
+    }
+
+    /* Dropdowns */
+    .icon-btn { background:none; border:none; cursor:pointer; position:relative; padding:6px; border-radius:50%; }
+    .icon-btn img { width:28px; height:28px; border-radius:50%; }
+    .badge {
+      position:absolute; top:-5px; right:-5px;
+      background:#e74c3c; color:white; font-size:0.7rem; font-weight:bold;
+      padding:2px 6px; border-radius:50%;
+    }
+    .dropdown { position:relative; }
+    .dropdown-content {
+      display:none; position:absolute; top:100%; right:0; background:white;
+      min-width:220px; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,0.2);
+      overflow:hidden; margin-top:6px; z-index:100;
+    }
+    .dropdown-content a {
+      padding:12px 16px; font-size:0.9rem; display:block;
+      color:#555; text-decoration:none; border-bottom:1px solid #f0f0f0;
+    }
+    .dropdown-content a:hover { background:#f8f8f8; }
+    .show { display:block !important; }
+
+    /* Page Layout */
+    .main { padding:30px; max-width:800px; margin:auto; }
+    .card {
+      background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+      padding:25px; box-shadow:0 4px 10px rgba(0,0,0,0.05);
+    }
+    h2 { margin-top:0; color:#111827; }
+
+    /* Form Styling */
+    form p { margin-bottom:18px; width:100%; }
+    form label { display:block; margin-bottom:6px; font-weight:600; color:#374151; }
+    form input, form select, form textarea {
+      display:block;
+      width:100%;
+      max-width:100%;
+      padding:10px;
+      border:1px solid #d1d5db;
+      border-radius:8px;
+      background:#f9fafb;
+      transition:border .2s;
+      box-sizing:border-box;
+    }
+    form input:focus, form select:focus, form textarea:focus {
+      outline:none; border-color:#2563eb; background:white;
+    }
+
+    .btn {
+      background:#111827; color:#fff; padding:10px 16px; border-radius:8px;
+      text-decoration:none; font-size:14px; font-weight:500; transition:.3s;
+      border:none; cursor:pointer; margin-right:8px;
+    }
+    .btn:hover { background:#374151; }
+    .btn-secondary { background:#6b7280; }
+    .btn-secondary:hover { background:#4b5563; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}" class="active">Projects</a></li>
+      <li><a href="{% url 'talent_search' %}">Talent</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    <input type="text" class="search-box" placeholder="Search projects, talent...">
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <a>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></a>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All</a>
+        {% else %}
+          <a>No new notifications</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+  <div class="card">
+    <h2>Edit Project: {{ project.title }}</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-fields">
+        {{ form.as_p }}
+      </div>
+      <button type="submit" class="btn">💾 Save Changes</button>
+      <a href="{% url 'project_detail' project.id %}" class="btn btn-secondary">← Cancel</a>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if (d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+window.onclick = function(event) {
+  if (!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+
+</body>
+</html>

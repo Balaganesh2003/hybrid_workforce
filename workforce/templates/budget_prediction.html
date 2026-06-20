@@ -1,0 +1,195 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Budget Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .prediction-card {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        form { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; 
+        }
+
+        .form-field { text-align: left; }
+        label {
+            display: block; 
+            font-weight: bold; 
+            color: #555; 
+            margin-bottom: 6px; 
+        }
+
+        input, select, textarea {
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd;
+            border-radius: 6px; 
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745; 
+            color: #fff; 
+            padding: 14px;
+            border: none; 
+            border-radius: 6px; 
+            font-size: 16px;
+            cursor: pointer; 
+            font-weight: bold;
+        }
+
+        button:hover { background-color: #218838; }
+
+        .result { 
+            margin-top: 30px; 
+            color: #333; 
+            font-size: 22px; 
+            font-weight: 600; 
+        }
+
+        .note { 
+            color: #555; 
+            margin-top: 8px; 
+            font-size: 14px; 
+        }
+
+        .warning {
+            margin-top: 20px; 
+            background: #fff3cd; 
+            color: #856404;
+            padding: 12px; 
+            border-radius: 6px; 
+            font-size: 15px;
+        }
+
+        .back-link {
+            display: inline-block; 
+            margin-top: 25px;
+            color: #007bff; 
+            text-decoration: none; 
+            font-weight: 600;
+        }
+
+        .back-link:hover { color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="prediction-card">
+        <h2>💰 Project Budget Prediction</h2>
+
+        <!-- Project Form -->
+        <form method="post" action="" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div style="color: red; font-size: 13px;">
+                            {{ field.errors|join:", " }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit">Predict Budget</button>
+        </form>
+
+        <!-- Prediction Result -->
+        {% if predicted_budget %}
+            <div class="result">
+                Predicted Budget: ₹ {{ predicted_budget|floatformat:2|intcomma }}
+            </div>
+            <div class="note">(Based on historical data)</div>
+
+            {% if frontend_estimate %}
+                <div class="note">Frontend Quick Estimate: ₹ {{ frontend_estimate|floatformat:2|intcomma }}</div>
+            {% endif %}
+            
+            {% if avg_past_budget %}
+                <div class="note">📊 Avg Past Budget: ₹ {{ avg_past_budget|floatformat:2|intcomma }}</div>
+            {% endif %}
+
+            <!-- Budget Chart -->
+            <canvas id="budgetChart" width="400" height="200" style="margin-top:30px;"></canvas>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                const budgetData = [
+                    parseFloat("{{ predicted_budget|default:0|floatformat:2 }}"),
+                    parseFloat("{{ frontend_estimate|default:0|floatformat:2 }}"),
+                    parseFloat("{{ avg_past_budget|default:0|floatformat:2 }}")
+                ];
+
+                const budgetLabels = ['Backend Predicted', 'Frontend Estimate', 'Avg Past Budget'];
+                const colors = ['#28a745', '#ffc107', '#007bff'];
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: budgetLabels,
+                        datasets: [{
+                            label: 'Budget (₹)',
+                            data: budgetData,
+                            backgroundColor: colors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        {% endif %}
+
+        <!-- Warning Messages -->
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="warning">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Back Link -->
+        <a href="{% url 'dashboard_client' %}" class="back-link">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Talent Search</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7f9;
+      color: #333;
+    }
+
+    /* NAVBAR STYLES */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      padding: 12px 30px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links li a:hover,
+    .nav-links li a.active {
+      color: #3498db;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+    }
+
+    .icon-btn img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    /* FILTER SECTION */
+    .container {
+      padding: 40px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .filters select, .filters input[type="text"] {
+      padding: 10px;
+
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    .filters form {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+    }
+
+    .talent-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .talent-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .skill-tag {
+      display:inline-block;
+      margin:2px 2px;
+      background:#e0f7fa;
+      color:#007bff;
+      padding:5px 10px;
+      border-radius:20px;
+      font-size:12px;
+    }
+
+    .pagination {
+      text-align:center;
+      margin-top:30px;
+    }
+
+    .pagination a, .pagination span {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin: 0 2px;
+      text-decoration: none;
+      color: black;
+    }
+
+    .pagination span.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+
+    @media(max-width:768px){
+      .navbar {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .navbar-left, .navbar-right {
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      .nav-links {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .filters {
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <script>
+    function updateSubSkills() {
+      const skillCategory = document.getElementById("skillCategory").value;
+      const subSkillSelect = document.getElementById("subSkill");
+      subSkillSelect.innerHTML = "";
+
+      const subSkills = {
+        "Mobile Application": ["Kotlin", "Java"],
+        "Web Application": ["Python", "PHP", "Java", "React JS", "Ruby", "C#"],
+        "Data Scientist": ["Machine Learning", "Deep Learning", "Python"],
+        "Cloud Engineer": ["AWS", "Azure", "GCP"]
+      };
+
+      if (subSkills[skillCategory]) {
+        subSkills[skillCategory].forEach(skill => {
+          const option = document.createElement("option");
+          option.value = skill;
+          option.text = skill;
+          subSkillSelect.appendChild(option);
+        });
+      } else {
+        const option = document.createElement("option");
+        option.value = "";
+        option.text = "All Skills";
+        subSkillSelect.appendChild(option);
+      }
+    }
+  </script>
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}">Projects</a></li>
+      <li><a href="{% url 'talent_search' %}" class="active">Talent</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    <button class="icon-btn">
+      <img src="{% static 'images/bell.png' %}" alt="Notifications">
+    </button>
+    <a href="{% url 'profile' %}" class="icon-btn">
+      <img src="{% static 'images/customer.png' %}" alt="Profile">
+    </a>
+  </div>
+</nav>
+
+<!-- Main Container -->
+<div class="container">
+
+  <h1 style="margin-bottom: 10px;">Find Talent</h1>
+  <p style="margin-bottom: 30px;">Search and filter freelancers or full-time talents for your projects.</p>
+
+  <!-- Filters -->
+  <div class="filters">
+    <form method="GET">
+      <input type="text" name="q" placeholder="Search by name or skill..." value="{{ request.GET.q|default:'' }}">
+      <button type="submit" style="background: #007bff; color: white; border: none; border-radius: 5px; padding: 10px 20px;">Search</button>
+    </form>
+
+    <form method="GET">
+      <select name="role">
+        <option value="">All Roles</option>
+        <option value="freelancer" {% if request.GET.role == 'freelancer' %}selected{% endif %}>Freelancer</option>
+        <option value="full_time" {% if request.GET.role == 'full_time' %}selected{% endif %}>Full-Time</option>
+      </select>
+    </form>
+
+    <form method="GET">
+      <select id="skillCategory" onchange="updateSubSkills()">
+        <option value="">All Skill Categories</option>
+        <option value="Mobile Application">Mobile Application</option>
+        <option value="Web Application">Web Application</option>
+        <option value="Data Scientist">Data Scientist</option>
+        <option value="Cloud Engineer">Cloud Engineer</option>
+      </select>
+    </form>
+
+    <form method="GET">
+      <select id="subSkill" name="skill">
+        <option value="">All Skills</option>
+        {% for skill in skills_list %}
+          <option value="{{ skill }}" {% if request.GET.skill == skill %}selected{% endif %}>{{ skill }}</option>
+        {% endfor %}
+      </select>
+       <button type="submit" style="background:#007bff; color:white; border:none; border-radius:5px; padding:10px 20px;">Search</button>
+    </form>
+  </div>
+
+  <!-- Talent List -->
+  {% if talents %}
+  <div class="talent-list">
+    {% for talent in talents %}
+    <div class="talent-card">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        
+        <div>
+          <h3 style="margin:0;">{{ talent.username }}</h3>
+          <small>{{ talent.user_type|title }}</small>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px;">
+        {% if talent.skill_list %}
+          {% for skill in talent.skill_list %}
+            <span class="skill-tag">{{ skill }}</span>
+          {% endfor %}
+        {% else %}
+          <p style="font-size:12px; color:#888;">No skills added</p>
+        {% endif %}
+      </div>
+
+      <div style="margin-top: 10px; font-size:12px; color:#555;">
+        <p>Experience: {{ talent.profile.experience|default:"N/A" }} years</p>
+        <p>Location: {{ talent.profile.location|default:"Not set" }}</p>
+      </div>
+
+      
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p>No talents found matching your criteria.</p>
+  {% endif %}
+
+  <!-- Pagination -->
+  {% if talents.has_other_pages %}
+  <div class="pagination">
+    {% if talents.has_previous %}
+      <a href="?page={{ talents.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    {% for num in talents.paginator.page_range %}
+      {% if talents.number == num %}
+        <span class="active">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if talents.has_next %}
+      <a href="?page={{ talents.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

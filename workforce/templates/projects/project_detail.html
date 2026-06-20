@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ project.title }} - Project Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { margin:0; font-family:Arial, sans-serif; background:#f8f9fb; color:#333; }
+
+    /* Navbar */
+    .navbar {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#2c3e50; padding:12px 30px; position:sticky; top:0;
+      z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    .navbar-left { display:flex; align-items:center; gap:20px; }
+    .logo { color:white; font-size:1.5rem; font-weight:bold; text-decoration:none; transition:0.3s; }
+    .logo:hover { color:#3498db; }
+    .nav-links { list-style:none; display:flex; gap:15px; margin:0; padding:0; }
+    .nav-links li a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+    .nav-links li a.active, .nav-links li a:hover { color:#3498db; }
+    .navbar-right { display:flex; align-items:center; gap:15px; position:relative; }
+    .search-box { padding:6px 12px; border-radius:20px; border:none; background:#34495e; color:white; outline:none; }
+
+    /* Dropdowns */
+    .icon-btn { background:none; border:none; cursor:pointer; position:relative; padding:6px; border-radius:50%; transition:0.3s; }
+    .icon-btn img { width:28px; height:28px; border-radius:50%; }
+    .badge { position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; font-size:0.7rem; font-weight:bold; padding:2px 6px; border-radius:50%; }
+    .dropdown { position:relative; }
+    .dropdown-content {
+      display:none; position:absolute; top:100%; right:0; background:white; min-width:240px;
+      border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,0.2); overflow:hidden; margin-top:6px; z-index:100;
+    }
+    .dropdown-content a, .dropdown-content div {
+      padding:12px 16px; font-size:0.9rem; display:block; color:#555; text-decoration:none; border-bottom:1px solid #f0f0f0;
+    }
+    .dropdown-content a:hover { background:#f8f8f8; }
+    .show { display:block !important; }
+
+    /* Main Layout */
+    .main-grid { display:grid; grid-template-columns:1fr; gap:20px; padding:20px; max-width:1000px; margin:auto; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin-bottom:20px; }
+    .btn { background:#111827; color:#fff; padding:8px 14px; border-radius:6px; text-decoration:none; font-size:14px; display:inline-block; margin-top:10px; }
+    .btn:hover { background:#374151; }
+    .progress-bar { height:8px; background:#f3f4f6; border-radius:4px; margin:8px 0; }
+    .progress-fill { height:100%; background:#111827; border-radius:4px; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}" class="active">Projects</a></li>
+      <li><a href="{% url 'talent_search' %}">Talent</a></li>
+    </ul>
+  </div>
+
+  <div class="navbar-right">
+    <input type="text" class="search-box" placeholder="Search projects, talent...">
+
+    <!-- Notifications -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All</a>
+        {% else %}
+          <div>No new notifications</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-grid">
+  <div class="card">
+    <h2 style="margin-top:0;">{{ project.title }}</h2>
+    <p><strong>Type:</strong> {{ project.get_project_type_display }}</p>
+    <p><strong>Estimated Hours:</strong> {{ project.estimated_hours }}</p>
+    <p><strong>Status:</strong> {{ project.status }}</p>
+    <p><strong>Budget:</strong> ₹{{ project.estimated_budget }}</p>
+    <p><strong>Timeline:</strong> {{ project.start_date|date:"M d, Y" }} → {{ project.end_date|date:"M d, Y" }}</p>
+
+    <h3>Team Members</h3>
+    <ul>
+      {% for member in project.team_members.all %}
+        <li>{{ member.username }}</li>
+      {% empty %}
+        <li>No team members assigned.</li>
+      {% endfor %}
+    </ul>
+
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:{{ project.progress_percent }}%"></div>
+    </div>
+    <p>Progress: {{ project.progress_percent }}%</p>
+
+<a href="
+{% if user.user_type == 'client' %}
+  {% url 'dashboard_client' %}
+{% elif user.user_type == 'freelancer' %}
+  {% url 'dashboard_freelancer' %}
+{% elif user.user_type == 'full_time' %}
+  {% url 'dashboard_full_time' %}
+{% endif %}
+" class="btn btn-secondary">Back to Dashboard</a>
+
+    {% if can_edit %}
+      <a href="{% url 'edit_project' project.id %}" class="btn">✏️ Edit Project</a>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if (d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+window.onclick = function(event) {
+  if (!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+
+</body>
+</html>

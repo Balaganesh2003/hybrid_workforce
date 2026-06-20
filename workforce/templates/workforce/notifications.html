@@ -1,0 +1,103 @@
+<!-- workforce/templates/workforce/notifications.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .notifications-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        ul.notifications-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul.notifications-list li {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background-color: #fff;
+            transition: 0.3s;
+        }
+        ul.notifications-list li.unread {
+            background-color: #eef7ff;
+        }
+        ul.notifications-list li p {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+        ul.notifications-list li p strong {
+            color: #333;
+        }
+        .back-dashboard {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        .back-dashboard:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="notifications-container">
+        <h2>Your Notifications</h2>
+
+        {% if notifications %}
+            <ul class="notifications-list">
+                {% for notification in notifications %}
+                    <li class="{% if not notification.is_read %}unread{% endif %}">
+                        <p>
+                            <strong>Message:</strong> {{ notification.message }}<br>
+                            <small>Received: {{ notification.created_at|date:"F j, Y, P" }}</small>
+                        </p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You have no notifications at this time.</p>
+        {% endif %}
+
+        <!-- Role-based Back to Dashboard -->
+        {% if user.user_type == 'Client' %}
+            <a href="{% url 'dashboard_client' %}" class="back-dashboard">Back to Dashboard</a>
+        {% elif user.user_type == 'Freelancer' %}
+            <a href="{% url 'dashboard_freelancer' %}" class="back-dashboard">Back to Dashboard</a>
+        {% elif user.user_type == 'Full-Time' %}
+            <a href="{% url 'dashboard_full_time' %}" class="back-dashboard">Back to Dashboard</a>
+        {% endif %}
+
+    </div>
+
+</body>
+</html>

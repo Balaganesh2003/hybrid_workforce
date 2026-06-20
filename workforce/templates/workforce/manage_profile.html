@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Profile</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 0; }
+
+    /* Navbar */
+    .navbar { background-color: #2c3e50; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
+    .navbar h2 { margin: 0; font-size: 20px; }
+    .navbar a { color: white; text-decoration: none; margin-left: 15px; }
+    .navbar a:hover { text-decoration: underline; }
+
+    /* Containers */
+    .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+    h3 { font-size: 18px; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+
+    input, textarea, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    textarea { height: 80px; resize: none; }
+    .half-width { width: 48%; display: inline-block; }
+
+    button { padding: 12px 20px; background-color: #2c3e50; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background-color: #1a252f; }
+
+    .add-btn { margin-top: 10px; width: 100%; }
+    .skills-section input { width: 70%; display: inline-block; }
+    .skills-section button { width: 25%; display: inline-block; }
+
+    .availability-days { display: flex; flex-wrap: wrap; gap: 12px; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+
+    .freelancer-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 10px; }
+
+    .update-btn-container { text-align: center; }
+    .update-btn { padding: 14px 30px; font-size: 16px; font-weight: bold; }
+
+    /* Dynamic items */
+    .skill-item { display: inline-block; background: #e1ecf4; padding: 6px 12px; border-radius: 15px; margin: 5px; font-size: 14px; position: relative; }
+    .skill-item span { margin-left: 8px; color: red; cursor: pointer; }
+
+    .experience-card { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 10px; position: relative; }
+    .remove-exp { position: absolute; top: 8px; right: 12px; color: red; cursor: pointer; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h2>Talent Profile</h2>
+    <div>
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'profile' %}">My Profile</a>
+      <a href="{% url 'logout' %}">Logout</a>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Header -->
+    <div class="container">
+      <div class="header-top">
+        <p style="margin: 0; font-size: 14px; color: #666;">Build your professional profile to attract opportunities</p>
+      </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="container">
+      <h3>Account Information</h3>
+      {{ user_form.username.label_tag }}
+      {{ user_form.username }}
+      {{ user_form.email.label_tag }}
+      {{ user_form.email }}
+    </div>
+
+    <!-- Profile Info -->
+    <div class="container">
+      <h3>Profile Information</h3>
+      {{ profile_form.phone.label_tag }}
+      {{ profile_form.phone }}
+
+      {{ profile_form.location.label_tag }}
+      {{ profile_form.location }}
+
+      {{ profile_form.bio.label_tag }}
+      {{ profile_form.bio }}
+
+      <!-- User Type -->
+      <label for="id_user_type">User  Type</label>
+      {{ profile_form.user_type }}
+
+      <!-- Hourly Rate (Freelancer Only) -->
+      <div id="hourlyRateField" style="display:none;">
+        {{ profile_form.hourly_rate.label_tag }}
+        {{ profile_form.hourly_rate }}
+      </div>
+
+      <!-- Monthly Salary (Full Time Only) -->
+      <div id="monthlySalaryField" style="display:none;">
+        {{ profile_form.monthly_salary.label_tag }}
+        {{ profile_form.monthly_salary }}
+      </div>
+
+      {{ profile_form.availability.label_tag }}
+      {{ profile_form.availability }}
+    </div>
+
+    <!-- Skills -->
+    <div class="container skills-section">
+      <h3>Skills & Expertise</h3>
+      <input type="text" id="skillInput" placeholder="Enter a skill" />
+      <button type="button" id="addSkillBtn">Add</button>
+      <div id="skillsList"></div>
+      <input type="hidden" name="skills" id="skillsHidden" value="{{ profile_form.instance.skills }}">
+    </div>
+
+    <!-- Experience -->
+    <div class="container">
+      <h3>Experience & Projects</h3>
+      <input type="text" id="expTitle" placeholder="Project/Company Title *" class="half-width" />
+      <input type="text" id="expRole" placeholder="Role *" class="half-width" />
+      <input type="text" id="expDuration" placeholder="Duration" class="half-width" />
+      <input type="url" id="expLink" placeholder="Links" class="half-width" />
+      <textarea id="expDesc" placeholder="Describe your responsibilities, achievements, and technologies used..."></textarea>
+      <button class="add-btn" type="button" id="addExperienceBtn">Add Experience</button>
+      <div id="experienceList"></div>
+      <input type="hidden" name="experience" id="experiencesHidden" value="{{ profile_form.instance.experience }}">
+    </div>
+
+    <!-- Submit -->
+    <div class="container update-btn-container">
+      <button type="submit" class="update-btn">Update Profile</button>
+    </div>
+  </form>
+
+  <script>
+    // Elements
+    const userTypeSelect = document.getElementById("id_user_type");
+    const hourlyRateField = document.getElementById("hourlyRateField");
+    const monthlySalaryField = document.getElementById("monthlySalaryField");
+
+    function togglePaymentFields() {
+      const userType = userTypeSelect.value;
+      if (userType === "freelancer") {
+        hourlyRateField.style.display = "block";
+        monthlySalaryField.style.display = "none";
+      } else if (userType === "full_time") {
+        hourlyRateField.style.display = "none";
+        monthlySalaryField.style.display = "block";
+      } else {
+        hourlyRateField.style.display = "none";
+        monthlySalaryField.style.display = "none";
+      }
+    }
+    togglePaymentFields();
+    userTypeSelect.addEventListener("change", togglePaymentFields);
+
+    // Skills Add + Remove
+    const addSkillBtn = document.getElementById("addSkillBtn");
+    const skillInput = document.getElementById("skillInput");
+    const skillsList = document.getElementById("skillsList");
+    const skillsHidden = document.getElementById("skillsHidden");
+
+    if (skillsHidden.value) {
+      try {
+        const savedSkills = JSON.parse(skillsHidden.value);
+        savedSkills.forEach(skill => addSkill(skill));
+      } catch {}
+    }
+
+    addSkillBtn.addEventListener("click", () => {
+      if (skillInput.value.trim() !== "") {
+        addSkill(skillInput.value.trim());
+        skillInput.value = "";
+        saveSkills();
+      }
+    });
+
+    function addSkill(skill) {
+      const div = document.createElement("div");
+      div.className = "skill-item";
+      div.innerHTML = skill + ' <span title="Remove skill">&times;</span>';
+      div.querySelector("span").addEventListener("click", () => {
+        div.remove();
+        saveSkills();
+      });
+      skillsList.appendChild(div);
+    }
+
+    function saveSkills() {
+      const skills = Array.from(skillsList.querySelectorAll(".skill-item"))
+                          .map(div => div.textContent.replace("×", "").trim());
+      skillsHidden.value = JSON.stringify(skills);
+    }
+
+    // Experience Add + Remove
+    const addExperienceBtn = document.getElementById("addExperienceBtn");
+    const experienceList = document.getElementById("experienceList");
+    const experiencesHidden = document.getElementById("experiencesHidden");
+
+    if (experiencesHidden.value) {
+      try {
+        const savedExps = JSON.parse(experiencesHidden.value);
+        savedExps.forEach(exp => addExperienceCard(exp.title, exp.role, exp.duration, exp.link, exp.desc));
+      } catch {}
+    }
+
+    addExperienceBtn.addEventListener("click", () => {
+      const title = document.getElementById("expTitle").value.trim();
+      const role = document.getElementById("expRole").value.trim();
+      const duration = document.getElementById("expDuration").value.trim();
+      const link = document.getElementById("expLink").value.trim();
+      const desc = document.getElementById("expDesc").value.trim();
+
+      if (title && role) {
+        addExperienceCard(title, role, duration, link, desc);
+        saveExperiences();
+
+        document.getElementById("expTitle").value = "";
+        document.getElementById("expRole").value = "";
+        document.getElementById("expDuration").value = "";
+        document.getElementById("expLink").value = "";
+        document.getElementById("expDesc").value = "";
+      } else {
+        alert("Please fill in both Project/Company Title and Role.");
+      }
+    });
+
+    function addExperienceCard(title, role, duration, link, desc) {
+      const div = document.createElement("div");
+      div.className = "experience-card";
+      div.innerHTML = `
+        <span class="remove-exp" title="Remove">&times;</span>
+        <b>${title}</b> - ${role}<br>
+        <i>${duration}</i><br>
+        ${link ? `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a><br>` : ''}
+        <p>${desc}</p>
+      `;
+      div.querySelector(".remove-exp").addEventListener("click", () => {
+        div.remove();
+        saveExperiences();
+      });
+      experienceList.appendChild(div);
+    }
+
+    function saveExperiences() {
+      const experiences = Array.from(experienceList.querySelectorAll(".experience-card")).map(div => {
+        return {
+          title: div.querySelector("b")?.innerText || "",
+          role: div.innerHTML.split("</b> - ")[1]?.split("<br>")[0] || "",
+          duration: div.querySelector("i")?.innerText || "",
+          link: div.querySelector("a")?.href || "",
+          desc: div.querySelector("p")?.innerText || "",
+        };
+      });
+      experiencesHidden.value = JSON.stringify(experiences);
+    }
+  </script>
+
+</body>
+</html>

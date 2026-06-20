@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7f9;
+      color: #333;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      padding: 12px 30px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links li a:hover,
+    .nav-links li a.active {
+      color: #3498db;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .search-box {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: none;
+      background: #34495e;
+      color: white;
+      outline: none;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+    }
+
+    .icon-btn img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      min-width: 240px;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      margin-top: 6px;
+      z-index: 100;
+    }
+
+    .dropdown-content a, .dropdown-content div {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      display: block;
+      color: #555;
+      text-decoration: none;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .dropdown-content a:hover {
+      background: #f8f8f8;
+    }
+
+    .show {
+      display: block !important;
+    }
+
+    /* Profile Container */
+    .profile-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    /* Profile Header */
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .username {
+      flex: 1;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .user-type {
+      flex: 1;
+      font-size: 16px;
+      color: #666;
+      text-align: center;
+    }
+
+    .email {
+      flex: 1;
+      font-size: 14px;
+      color: #999;
+      text-align: right;
+    }
+
+    /* Talent Details */
+    .talent-details {
+      margin-bottom: 30px;
+    }
+
+    .talent-details h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+
+    .talent-details p {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    /* Action Buttons */
+    .actions-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .action-btn {
+      flex: 1 1 180px;
+      text-align: center;
+      padding: 12px 20px;
+      border: 1px solid #4a4a4a;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #4a4a4a;
+      font-weight: 500;
+    }
+
+    .action-btn:hover {
+      background: #4a4a4a;
+      color: white;
+    }
+
+    @media(max-width:768px){
+      .navbar {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .navbar-left, .navbar-right {
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      .nav-links {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .username, .user-type, .email {
+        text-align: center !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}">Project</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+  
+
+    <!-- Notification -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All</a>
+        {% else %}
+          <div>No notifications</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Profile Content -->
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="username">{{ user.username }}</div>
+    <div class="user-type">{{ user.user_type }}</div>
+    <div class="email">{{ user.email }}</div>
+  </div>
+
+  {% if user.user_type != 'Client' %}
+  <div class="talent-details">
+    <h2>Talent Details</h2>
+    <p><strong>Skills:</strong> {{ profile.skills|default:"Not specified" }}</p>
+    <p><strong>Experience:</strong> {{ profile.experience|default:"Not specified" }}</p>
+    <p><strong>Hourly Rate:</strong> ₹{{ profile.hourly_rate|default:"—" }}</p>
+    <p><strong>Bio:</strong> {{ profile.bio|default:"No bio provided" }}</p>
+  </div>
+  {% endif %}
+
+  <div class="profile-actions">
+    <div class="actions-grid">
+      {% if user.user_type == 'Client' %}
+        <a href="{% url 'create_project' %}" class="action-btn">Create Project</a>
+        <a href="{% url 'projects' %}" class="action-btn">View My Projects</a>
+      {% else %}
+        <a href="{% url 'manage_profile' %}" class="action-btn">Edit Profile</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id){
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if(d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+
+window.onclick = function(event){
+  if(!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')){
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+</body>
+</html>

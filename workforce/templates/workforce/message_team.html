@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Team - {{ project.title }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7f6; margin:0; padding:0; }
+
+    /* Navbar */
+    .navbar { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; padding: 12px 30px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .navbar-left { display: flex; align-items: center; gap: 20px; }
+    .logo { color: white; font-size: 1.5rem; font-weight: bold; text-decoration: none; transition: 0.3s; }
+    .logo:hover { color: #3498db; }
+    .nav-links { list-style: none; display: flex; gap: 15px; margin: 0; padding: 0; }
+    .nav-links li a { color: white; text-decoration: none; font-weight: 500; transition: 0.3s; }
+    .nav-links li a.active, .nav-links li a:hover { color: #3498db; }
+
+    .navbar-right { display: flex; align-items: center; gap: 15px; position: relative; }
+    .icon-btn { background: none; border: none; cursor: pointer; position: relative; padding: 6px; border-radius: 50%; }
+    .icon-btn img { width: 28px; height: 28px; border-radius: 50%; }
+    .badge { position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 50%; }
+
+    /* Dropdown */
+    .dropdown { position: relative; }
+    .dropdown-content { display: none; position: absolute; top: 100%; right: 0; background: white; min-width: 220px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); margin-top: 6px; z-index: 100; overflow: hidden; }
+    .dropdown-content a, .dropdown-content div { padding: 12px 16px; font-size: 0.9rem; display: block; color: #555; text-decoration: none; border-bottom: 1px solid #f0f0f0; }
+    .dropdown-content a:hover { background: #f8f8f8; }
+    .show { display: block !important; }
+
+    /* Chat */
+    .dashboard-container { max-width: 800px; margin: 2rem auto; padding: 2rem; }
+    .chat-box { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .msg { padding: 10px; margin-bottom: 10px; border-radius: 6px; }
+    .mine { background: #d1e7dd; text-align: right; }
+    .other { background: #f8d7da; text-align: left; }
+    .meta { font-size: 12px; color: #555; }
+    textarea { width: 100%; border-radius: 6px; border: 1px solid #ddd; padding: 10px; }
+    button { margin-top: 10px; padding: 10px 20px; border: none; border-radius: 6px; background: #007bff; color: #fff; cursor: pointer; }
+    button:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_full_time' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_full_time' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}" class="active">Projects</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All ({{ notifications|length }})</a>
+        {% else %}
+          <div>No notifications</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Chat -->
+<div class="dashboard-container">
+  <div class="chat-box">
+      <h2>💬 Message Team: {{ project.title }}</h2>
+
+      <div>
+          {% for msg in messages %}
+              <div class="msg {% if msg.sender == request.user %}mine{% else %}other{% endif %}">
+                  <div><b>{{ msg.sender.username }}</b></div>
+                  <div>{{ msg.content }}</div>
+                  <div class="meta">{{ msg.timestamp|date:"M d, Y H:i" }}</div>
+              </div>
+          {% empty %}
+              <p>No messages yet.</p>
+          {% endfor %}
+      </div>
+
+      <form method="post">{% csrf_token %}
+          {{ form.content }}
+          <button type="submit">Send</button>
+      </form>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if(d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+window.onclick = function(event) {
+  if (!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+
+</body>
+</html>

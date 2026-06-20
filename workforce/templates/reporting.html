@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics & Reporting</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 900px; margin: 20px auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .section { margin-bottom: 25px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 6px; }
+        .section h3 { margin-top: 0; color: #007bff; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        li:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Reporting & Analytics</h1>
+        <p style="text-align: center;">(Admin View Only)</p>
+
+        <div class="section">
+            <h3>Project Performance</h3>
+            <ul>
+                <li><strong>Total Projects:</strong> {{ total_projects }}</li>
+                <li><strong>Open Projects:</strong> {{ open_projects }}</li>
+                <li><strong>In Progress Projects:</strong> {{ in_progress_projects }}</li>
+                <li><strong>Completed Projects:</strong> {{ completed_projects }}</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h3>Budget Prediction Accuracy</h3>
+            {% if projects_with_budget_data_count %}
+                <p>Based on {{ projects_with_budget_data_count }} historical projects:</p>
+                <p><strong>Average Budget Difference:</strong> ${{ average_difference|floatformat:2 }}</p>
+                <p style="font-size: 0.9em; color: #777;">(Lower values indicate better accuracy)</p>
+            {% else %}
+                <p>No historical data available to calculate prediction accuracy.</p>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h3>Team Performance</h3>
+            {% if performance_data %}
+                <p>Team members ranked by completed projects:</p>
+                <ol>
+                    {% for data in performance_data %}
+                        <li><strong>{{ data.username }}</strong>: {{ data.completed_projects }} completed projects</li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p>No team performance data available.</p>
+            {% endif %}
+        </div>
+        
+        <p style="margin-top: 20px;"><a href="{% url 'dashboard' %}" style="color: #007bff; text-decoration: none;">Back to Dashboard</a></p>
+    </div>
+</body>
+</html>

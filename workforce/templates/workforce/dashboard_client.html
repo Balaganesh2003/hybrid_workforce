@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { margin:0; font-family:Arial, sans-serif; background:#f8f9fb; color:#333; }
+    /* Navbar */
+    .navbar { display:flex; justify-content:space-between; align-items:center; background:#2c3e50; padding:12px 30px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+    .navbar-left { display:flex; align-items:center; gap:20px; }
+    .logo { color:white; font-size:1.5rem; font-weight:bold; text-decoration:none; transition:0.3s; }
+    .logo:hover { color:#3498db; }
+    .nav-links { list-style:none; display:flex; gap:15px; margin:0; padding:0; }
+    .nav-links li a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+    .nav-links li a.active, .nav-links li a:hover { color:#3498db; }
+    .navbar-right { display:flex; align-items:center; gap:15px; position:relative; }
+    .search-box { padding:6px 12px; border-radius:20px; border:none; background:#34495e; color:white; outline:none; }
+    .icon-btn { background:none; border:none; cursor:pointer; position:relative; padding:6px; border-radius:50%; transition:0.3s; }
+    .icon-btn img { width:28px; height:28px; border-radius:50%; }
+    .badge { position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; font-size:0.7rem; font-weight:bold; padding:2px 6px; border-radius:50%; }
+    .dropdown { position:relative; }
+    .dropdown-content { display:none; position:absolute; top:100%; right:0; background:white; min-width:240px; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,0.2); overflow:hidden; margin-top:6px; z-index:100; }
+    .dropdown-content a, .dropdown-content div { padding:12px 16px; font-size:0.9rem; display:block; color:#555; text-decoration:none; border-bottom:1px solid #f0f0f0; }
+    .dropdown-content a:hover { background:#f8f8f8; }
+    .show { display:block !important; }
+    .main-grid { display:grid; grid-template-columns:2fr 1fr; gap:20px; padding:20px; max-width:1400px; margin:auto; }
+    .card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin-bottom:20px; }
+    .stat-card { background:#fff; border:1px solid #e5e7eb; padding:15px; border-radius:10px; text-align:center; }
+    .btn { display:inline-block; background:#111827; color:#fff; padding:6px 12px; border-radius:6px; font-size:14px; text-decoration:none; transition:0.3s; margin-top:6px; }
+    .btn:hover { background:#374151; }
+    .btn-success { background:#16a34a; }
+    .btn-success:hover { background:#15803d; }
+    .btn-info { background:#111827; }
+    .btn-info:hover { background:#111827; }
+    .link-btn { margin-left:10px; font-size:14px; text-decoration:underline; color:#111827; cursor:pointer; }
+    @media(max-width:1024px){ .main-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}" class="active">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}">Projects</a></li>
+      <li><a href="{% url 'talent_search' %}">Talent</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+    
+    <!-- Notifications -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All ({{ notifications|length }})</a>
+        {% else %}
+          <div>No new notifications</div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Profile -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Grid -->
+<div class="main-grid">
+
+  <!-- Left Column -->
+  <div>
+    <h3 style="margin-bottom:15px;">Client Dashboard</h3>
+
+    <!-- Stats -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:15px; margin-bottom:20px;">
+      <div class="stat-card">
+        <h4 style="margin:0; font-size:14px; color:#6b7280;">Active Projects</h4>
+        <p style="font-size:22px; margin:10px 0 0; font-weight:bold;">{{ active_projects }}</p>
+      </div>
+      <div class="stat-card">
+        <h4 style="margin:0; font-size:14px; color:#6b7280;">Avg. Progress</h4>
+        <p style="font-size:22px; margin:10px 0 0; font-weight:bold;">{{ avg_progress|default:0 }}%</p>
+      </div>
+      <div class="stat-card">
+        <h4 style="margin:0; font-size:14px; color:#6b7280;">Total Investment</h4>
+        <p style="font-size:22px; margin:10px 0 0; font-weight:bold;">
+          ₹{{ total_investment|floatformat:2|default:"0.00" }}
+        </p>
+      </div>
+      <div class="stat-card">
+        <h4 style="margin:0; font-size:14px; color:#6b7280;">Budget Utilization</h4>
+        <p style="font-size:22px; margin:10px 0 0; font-weight:bold;">{{ budget_utilization|floatformat:2 }}%</p>
+        <div style="height:6px; background:#f3f4f6; border-radius:3px; margin-top:8px;">
+          <div style="width:{{ budget_utilization|default:0 }}%; height:100%; background:#111827; border-radius:3px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projects Overview -->
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:18px;">Projects Overview</h3>
+        <a href="{% url 'create_project' %}" class="btn">Create Project</a>
+      </div>
+
+      {% for project in projects %}
+        <div style="border:1px solid #e5e7eb; border-radius:8px; padding:15px; margin-bottom:15px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="margin:0; font-size:16px;">{{ project.title }}</h4>
+            <span style="font-size:14px; color:#6b7280;">Status: {{ project.status|capfirst }}</span>
+          </div>
+          <p style="margin:5px 0; font-size:14px; color:#374151;">
+            Budget: ₹{{ project.predicted_budget|floatformat:2|default:"0.00" }} |
+            Due: {{ project.end_date|date:"M d, Y" }} |
+            Team: {{ project.team_members.count }}
+          </p>
+          <div style="height:6px; background:#f3f4f6; border-radius:3px; margin:6px 0;">
+            <div style="width:{{ project.progress_percent|default:0 }}%; height:100%; background:#111827; border-radius:3px;"></div>
+          </div>
+          <small style="color:#6b7280;">Progress: {{ project.progress_percent|default:0 }}%</small>
+          <br><br>
+
+          <a href="{% url 'project_detail' project.id %}" class="btn">Open</a>
+          {% if user.is_authenticated and user.user_type|lower == "client" %}
+            <a href="{% url 'update_progress' project.id %}" class="btn btn-info">View Progress</a>
+          {% endif %}
+          <a href="{% url 'message_team' project.id %}" class="btn">Message Team</a>
+        </div>
+      {% empty %}
+        <p>No projects found.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Talent Search Results Section -->
+    {% if query %}
+      <div class="card">
+        <h2>Talent Search Results</h2>
+        <form method="get" action="{% url 'talent_search' %}">
+          <input type="text" name="q" value="{{ query }}" placeholder="Search again...">
+          <button type="submit" class="btn btn-info">Search</button>
+        </form>
+        {% if results %}
+          <ul>
+            {% for member in results %}
+              <li>{{ member.name }} - {{ member.role }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No matching talent found.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column -->
+  <div>
+    <div class="card">
+      <h4>Active Projects</h4>
+      <p>{{ active_projects }}</p>
+    </div>
+
+    <!-- Quick Talent Search -->
+    <div class="card">
+      <h4>Quick Talent Search</h4>
+      <form method="get" action="{% url 'talent_search' %}" style="display:flex; gap:8px; margin-bottom:10px;">
+        <input type="text" name="q" placeholder="Search skills, roles..." 
+               style="flex:1; padding:6px; border:1px solid #d1d5db; border-radius:6px;">
+        <button type="submit" class="btn btn-info" style="margin-top:0;">Search</button>
+      </form>
+      {% for member in team_members|slice:":5" %}
+        <p>{{ member.name }} - {{ member.role }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <h4>Latest Alerts</h4>
+      {% if alerts %}
+        {% for alert in alerts|slice:":5" %}
+          <p style="margin:8px 0; background:#fff8e1; padding:8px; border-radius:6px; border:1px solid #facc15;">
+            {{ alert.message }}
+          </p>
+        {% endfor %}
+      {% else %}
+        <p>No alerts</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h4>Messages</h4>
+      {% if messages %}
+        {% for msg in messages|slice:":5" %}
+          <p style="margin:8px 0; border-left:4px solid #3b82f6; padding-left:8px;">
+            {{ msg.content }}
+          </p>
+        {% endfor %}
+      {% else %}
+        <p>No messages</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+  document.querySelectorAll('.dropdown-content').forEach(d => { if(d.id!==id) d.classList.remove('show'); });
+  document.getElementById(id).classList.toggle('show');
+}
+window.onclick = function(event) {
+  if(!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')){
+    document.querySelectorAll('.dropdown-content').forEach(d=>d.classList.remove('show'));
+  }
+}
+</script>
+</body>
+</html>

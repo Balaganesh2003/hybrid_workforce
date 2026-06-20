@@ -1,0 +1,459 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HybridWorkforce - Intelligent Workforce Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a2332;
+      background: #f8fafc;
+      line-height: 1.6;
+    }
+
+    /* ===== HEADER/NAV ===== */
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    nav {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #475569;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: #14b8a6;
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 80px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .hero-content h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #0f172a;
+      margin-bottom: 20px;
+    }
+
+    .hero-content h1 .highlight {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-content p {
+      font-size: 1.15rem;
+      color: #475569;
+      margin-bottom: 30px;
+      max-width: 500px;
+      line-height: 1.7;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 13px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #14b8a6;
+      border: 2px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-visual img {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.1));
+    }
+
+    /* ===== STATS SECTION ===== */
+    .stats {
+      background: #fff;
+      padding: 60px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .stat-card {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0891b2;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    /* ===== FEATURES SECTION ===== */
+    .features {
+      padding: 100px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-header h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      font-size: 1.1rem;
+      color: #475569;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .feature-card {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .feature-card:hover {
+      border-color: #14b8a6;
+      box-shadow: 0 10px 30px rgba(20, 184, 166, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #14b8a6, #0891b2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .feature-card h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+      background: linear-gradient(135deg, #0f172a 0%, #1a2332 100%);
+      padding: 80px 40px;
+      text-align: center;
+      max-width: 1400px;
+      margin: 0 auto;
+      border-radius: 16px;
+      margin-bottom: 100px;
+    }
+
+    .cta-section h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-section .btn {
+      min-width: 200px;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #f1f5f9;
+      padding: 40px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 60px 20px;
+        gap: 40px;
+      }
+
+      .hero-content h1 {
+        font-size: 2.2rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .features {
+        padding: 60px 20px;
+      }
+
+      .section-header h2 {
+        font-size: 1.8rem;
+      }
+
+      .stats {
+        padding: 40px 20px;
+      }
+
+      .cta-section {
+        padding: 60px 20px;
+        margin-bottom: 60px;
+      }
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+    .btn:focus {
+      outline: 2px solid #14b8a6;
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">HybridWorkforce</div>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+      <a href="{% url 'login' %}">Login</a>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Build Your <span class="highlight">Hybrid Team</span> with Confidence</h1>
+      <p>Connect top talent, manage projects seamlessly, and create a thriving remote culture—all in one intelligent platform designed for modern teams.</p>
+      <div class="button-group">
+        <a href="{% url 'register' %}" class="btn btn-primary">Start Free Trial</a>
+        <a href="#features" class="btn btn-secondary">See How It Works</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <img src="{% static 'images/teamwork_banner.svg' %}" alt="HybridWorkforce platform showing team collaboration" loading="lazy">
+    </div>
+  </section>
+
+  <!-- STATS SECTION -->
+  <section class="stats">
+    <div class="stat-card">
+      <div class="stat-number">500K+</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">50+</div>
+      <div class="stat-label">Countries</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">4.9★</div>
+      <div class="stat-label">User Rating</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">99.9%</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <h2>Everything You Need to Succeed</h2>
+      <p>Powerful tools designed for hybrid and remote teams, from recruitment to project delivery.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Smart Hiring</h3>
+        <p>AI-powered talent matching connects you with candidates who fit your culture and skills. Review portfolios, run assessments, and hire in days, not weeks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Project Command Center</h3>
+        <p>Real-time dashboards track budgets, deadlines, and deliverables. Keep stakeholders informed and projects on track from kickoff to completion.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>Unified Communication</h3>
+        <p>Message, video call, and share files with teams and clients without context switching. Everything stays organized and searchable in one workspace.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="cta-section">
+    <h2>Ready to transform your hybrid workforce?</h2>
+    <p>Join thousands of teams that manage remote talent smarter with HybridWorkforce.</p>
+    <a href="{% url 'register' %}" class="btn btn-primary">Get Started Today</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 HybridWorkforce. All rights reserved. | <a href="#" style="color: #64748b; text-decoration: none;">Privacy</a> | <a href="#" style="color: #64748b; text-decoration: none;">Terms</a></p>
+  </footer>
+
+</body>
+</html>

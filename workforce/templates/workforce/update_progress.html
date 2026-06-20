@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Progress - {{ project.title }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f8f9fb; margin:0; padding:20px; }
+    .container { max-width:900px; margin:auto; }
+    .card { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.1); margin-bottom:20px; }
+    h2 { margin:0 0 15px 0; }
+    hr { margin:20px 0; border:0; border-top:1px solid #eee; }
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    table, th, td { border:1px solid #ddd; }
+    th, td { padding:10px; text-align:left; font-size:14px; }
+    th { background:#f9fafb; }
+    .btn { display:inline-block; background:#111827; color:#fff; padding:8px 16px; border-radius:6px; text-decoration:none; font-size:14px; margin-top:10px; }
+    .btn:hover { background:#374151; }
+    .btn-secondary { background:#6b7280; }
+    .btn-secondary:hover { background:#4b5563; }
+    .btn-success { background:#16a34a; }
+    .btn-success:hover { background:#15803d; }
+    form p { margin-bottom:10px; }
+    .note { font-size:14px; color:#6b7280; }
+    .message { background:#d1fae5; color:#065f46; padding:10px; border-radius:6px; margin-bottom:15px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+
+      <!-- Page Title -->
+      <h2>{{ project.title }} - Progress</h2>
+
+      <!-- Messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Progress Form -->
+      {% if form %}
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn">Save Progress</button>
+        </form>
+        <hr>
+      {% else %}
+        <p class="note"><strong>Client Mode:</strong> You can only view progress history.</p>
+        <hr>
+      {% endif %}
+
+      <!-- Mark Complete Button -->
+      {% if show_complete_btn and is_client %}
+        <a href="{% url 'mark_complete' project.id %}" class="btn btn-success">Mark Project Complete</a>
+        <hr>
+      {% endif %}
+      
+
+      <!-- Progress History -->
+      <h3>Progress History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Updated By</th>
+            <th>Role</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for update in updates %}
+            <tr>
+              <td>{{ update.updated_at|date:"M d, Y H:i" }}</td>
+              <td>{{ update.user.username }}</td>
+              <td>{{ update.user.user_type|capfirst }}</td>
+              <td>{{ update.progress_percent }}%</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" style="text-align:center; color:#6b7280;">No updates yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Back to Dashboard -->
+      <br>
+      {% if request.user.user_type|lower == "client" %}
+        <a href="{% url 'dashboard_client' %}" class="btn btn-secondary">← Back to Dashboard</a>
+      {% elif request.user.user_type|lower == "freelancer" %}
+        <a href="{% url 'dashboard_freelancer' %}" class="btn btn-secondary">← Back to Dashboard</a>
+      {% elif request.user.user_type|lower == "fulltime" %}
+        <a href="{% url 'dashboard_fulltime' %}" class="btn btn-secondary">← Back to Dashboard</a>
+      {% endif %}
+
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Team for {{ project.title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); width: 100%; max-width: 900px; }
+        h1, h2 { color: #007bff; }
+        .talent-list { list-style: none; padding: 0; }
+        .talent-item { border-bottom: 1px solid #ddd; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        .talent-item:last-child { border-bottom: none; }
+        .assign-btn { background-color: #28a745; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head> 
+<body>
+    <div class="container">
+        <h1>Select Team for "{{ project.title }}"</h1>
+        <p><strong>Status:</strong> {{ project.status }}</p>
+        <p><strong>Required Skills:</strong> {{ project.required_skills }}</p>
+
+        <hr>
+
+        <h2>Current Team Members</h2>
+        <ul class="talent-list">
+            {% if project.team_members.all %}
+                {% for member in project.team_members.all %}
+                    <li class="talent-item">
+                        <span>{{ member.username }} ({{ member.user_type }})</span>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <p>No team members have been assigned yet.</p>
+            {% endif %}
+        </ul>
+
+        <hr>
+
+        <h2>Available Talent</h2>
+        <ul class="talent-list">
+            {% if available_talent %}
+                {% for member in available_talent %}
+                    <li class="talent-item">
+                        <div>
+                            <strong>{{ member.username }}</strong> ({{ member.user_type }})
+                            <br>
+                            {% if member.talentprofile %}
+                                <small>Skills: {{ member.talentprofile.skills|default:"None" }}</small>
+                            {% else %}
+                                <small>Skills: Not available</small>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'select_team' project.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="selected_member" value="{{ member.id }}">
+                            <button type="submit" class="assign-btn">Assign</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <p>No available talent matches the criteria.</p>
+            {% endif %}
+        </ul>
+        <br>
+        <a href="{% url 'client_projects' %}">Back to Projects</a>
+    </div>
+</body>
+</html>

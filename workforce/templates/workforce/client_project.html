@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2c3e50;
+      padding: 12px 30px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links li a:hover,
+    .nav-links li a.active {
+      color: #3498db;
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .search-box {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: none;
+      background: #34495e;
+      color: white;
+      outline: none;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+    }
+
+    .icon-btn img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #e74c3c;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 50%;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      min-width: 240px;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      margin-top: 6px;
+      z-index: 100;
+    }
+
+    .dropdown-content a,
+    .dropdown-content div {
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      display: block;
+      color: #555;
+      text-decoration: none;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .dropdown-content a:hover {
+      background: #f8f8f8;
+    }
+
+    .show {
+      display: block !important;
+    }
+
+    /* Project Container */
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #343a40;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      padding: 30px 40px;
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      color: #007bff;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .project-list h3 {
+      margin-bottom: 10px;
+      color: #343a40;
+    }
+
+    .project-item {
+      border-bottom: 1px solid #eee;
+      padding: 20px 0;
+    }
+
+    .project-item:last-child {
+      border-bottom: none;
+    }
+
+    .project-item p {
+      margin: 6px 0;
+      color: #555;
+    }
+
+    .project-item a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .project-item a:hover {
+      text-decoration: underline;
+    }
+
+    @media(max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .navbar-left,
+      .navbar-right {
+        justify-content: center;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      .nav-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+      }
+
+      .container {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="{% url 'dashboard_client' %}" class="logo">HybridWork</a>
+    <ul class="nav-links">
+      <li><a href="{% url 'dashboard_client' %}">Dashboard</a></li>
+      <li><a href="{% url 'projects' %}" class="active">Project</a></li>
+      <li><a href="{% url 'talent_search' %}">Talent</a></li>
+    </ul>
+  </div>
+  <div class="navbar-right">
+  
+
+    <!-- Notification -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('notif-dropdown')">
+        <img src="{% static 'images/bell.png' %}" alt="Notifications">
+        {% if notifications|length > 0 %}
+          <span class="badge">{{ notifications|length }}</span>
+        {% endif %}
+      </button>
+      <div id="notif-dropdown" class="dropdown-content">
+        {% if notifications %}
+          {% for note in notifications|slice:":5" %}
+            <div>{{ note.message }} <small>({{ note.created_at|timesince }} ago)</small></div>
+          {% endfor %}
+          <a href="{% url 'notifications' %}">View All</a>
+        {% else %}
+          <div>No notifications</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="dropdown">
+      <button class="icon-btn" onclick="toggleDropdown('profile-dropdown')">
+        <img src="{% static 'images/customer.png' %}" alt="Profile">
+      </button>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="{% url 'profile' %}">My Profile</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Project Section -->
+<div class="container">
+  <h1>My Projects</h1>
+
+  <div class="card">
+    <h2>Your Active Projects</h2>
+
+    {% if projects %}
+      <div class="project-list">
+        {% for project in projects %}
+          <div class="project-item">
+            <h3>{{ project.title }}</h3>
+            <p><strong>Status:</strong> {{ project.status }}</p>
+            <p><strong>Budget:</strong> ₹{{ project.estimated_budget|default:"N/A" }}</p>
+            <p><strong>Required Skills:</strong> {{ project.required_skills }}</p>
+            <p>
+              
+               <a href="{% url 'edit_project' project.id %}" class="btn btn-primary">Edit Project</a>
+            </p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>You have not created any projects yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id){
+  document.querySelectorAll('.dropdown-content').forEach(d => {
+    if(d.id !== id) d.classList.remove('show');
+  });
+  document.getElementById(id).classList.toggle('show');
+}
+
+window.onclick = function(event){
+  if(!event.target.closest('.icon-btn') && !event.target.closest('.dropdown')){
+    document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+  }
+}
+</script>
+
+</body>
+</html>
