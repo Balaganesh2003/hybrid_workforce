@@ -3,7 +3,7 @@ asgiref==3.8.1
 asn1crypto==1.5.1
 backports.zoneinfo==0.2.1
 certifi==2026.2.25
-cffi==1.17.1
+cffi>=2.0.0
 charset-normalizer==3.4.7
 click==8.1.8
 colorama==0.4.6

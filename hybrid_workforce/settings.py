@@ -142,4 +142,7 @@ AUTH_USER_MODEL = 'workforce.CustomUser'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard_client'  # or whatever default
 
+DEBUG = False
+ALLOWED_HOSTS = ['balaganesh.pythonanywhere.com']
+
 
